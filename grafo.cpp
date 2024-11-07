@@ -35,7 +35,7 @@ int BFSadaptada(const std::map<std::string, std::vector<std::string>>& grafo, co
         cont ++;
         for(const auto& vizinho : grafo.at(atual)){
             if(visitado[vizinho]==false){
-                visitado[vizinho] == true;
+                visitado[vizinho] = true;
                 fila.push(vizinho);
             }
 
