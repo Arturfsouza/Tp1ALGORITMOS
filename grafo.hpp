@@ -12,6 +12,7 @@ class grafo{
         grafo(int vertices);
         void AdicionaAresta(std::string origem, std::string destino);
         std::string EncontraCapital();
+        int BatalhoesSecundarios(const std::string& capital);
         ~grafo();
 
 };
