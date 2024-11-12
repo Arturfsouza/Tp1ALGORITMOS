@@ -13,7 +13,10 @@ int main(){
         g.AdicionaAresta(origem,destino);}
     std::string capital = g.EncontraCapital();
     std::cout<<capital<<std::endl;
-    int n = g.BatalhoesSecundarios(capital);
-    
+    auto n = g.BatalhoesSecundarios(capital);
+    std::cout<<n.first<<std::endl;
+    for(auto it = n.second.begin(); it != n.second.end(); it++){
+        std::cout<<*it<<std::endl;
+    }
     return 0;
 }

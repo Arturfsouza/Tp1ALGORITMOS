@@ -75,10 +75,74 @@ std::map<std::string, std::vector<std::string>> InverteGrafo(const std::map<std:
     for(auto it=grafo.begin();it!=grafo.end();it++){ //itera sobre os vertices do grafo (primeiro elemento)
         for(auto i=it->second.begin();i!=it->second.end();i++){ //itera sobre as arestas do grafo (segundo elemento que eh um vetor de vertices)
             grafo_inverso[*i].push_back(it->first); //cria o grafo invertido, invertendo o first com o second do grafo original
+            if(grafo_inverso.find(it->first) == grafo_inverso.end()){
+                grafo_inverso[it->first]={};
+            }
         }
     }
     return grafo_inverso;
 }
+
+void preOrdem(const std::string& vertice, std::map<std::string, bool>& visitado, std::stack<std::string>& ordem, const std::map<std::string, std::vector<std::string>>& grafo){
+    visitado[vertice] = true;
+    for(const auto& vizinho : grafo.at(vertice)){
+        if(!visitado[vizinho]){
+            preOrdem(vizinho, visitado, ordem, grafo);
+        }
+    }
+    ordem.push(vertice);
+}
+
+void DFS(const std::string& vertice, std::map<std::string, bool>& visitado, const std::map<std::string, std::vector<std::string>>& grafo, std::vector<std::string>& cfc){
+    visitado[vertice] = true;
+    cfc.push_back(vertice);
+    for(const auto& vizinho : grafo.at(vertice)){
+        if(!visitado[vizinho]){
+            DFS(vizinho, visitado, grafo, cfc);
+        }
+    }
+}
+
+std::pair<int, std::vector<std::string>> grafo::BatalhoesSecundarios(const std::string& capital){
+    std::stack<std::string> ordem;
+    std::map<std::string, bool> visitado;
+
+    for(const auto& [vertice,_] : grafo_){
+        if(!visitado[vertice]){
+            preOrdem(vertice, visitado, ordem, grafo_);
+        }
+    }
+
+    auto grafo_invertido = InverteGrafo(grafo_);
+
+    visitado.clear();
+    int num_batalhoes = 0;
+    std::vector<std::string> locais_batalhoes;
+
+    while(!ordem.empty()){
+        std::string vertice = ordem.top();
+        ordem.pop();
+        int eh_capital = 0; //flag para detectar se eh capital
+        if(!visitado[vertice]){
+            std::vector<std::string> cfc;
+            DFS(vertice, visitado, grafo_invertido, cfc);
+
+            for(auto it= cfc.begin(); it!=cfc.end(); it++){
+                if (*it == capital){
+                    eh_capital = 1;
+                }
+            }
+            if(eh_capital == 0){
+                num_batalhoes++;
+                locais_batalhoes.push_back(cfc[0]);
+            }
+        }
+    }
+    return {num_batalhoes, locais_batalhoes};
+}
+
+
+
 
 
 grafo::~grafo(){}
