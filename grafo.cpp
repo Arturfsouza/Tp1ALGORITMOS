@@ -72,12 +72,12 @@ std::string grafo::EncontraCapital(){
 
 std::map<std::string, std::vector<std::string>> InverteGrafo(const std::map<std::string, std::vector<std::string>>& grafo){
     std::map<std::string, std::vector<std::string>> grafo_inverso;
-    for(auto it=grafo.begin();it!=grafo.end();it++){ //itera sobre os vertices do grafo (primeiro elemento)
-        for(auto i=it->second.begin();i!=it->second.end();i++){ //itera sobre as arestas do grafo (segundo elemento que eh um vetor de vertices)
-            grafo_inverso[*i].push_back(it->first); //cria o grafo invertido, invertendo o first com o second do grafo original
-            if(grafo_inverso.find(it->first) == grafo_inverso.end()){
-                grafo_inverso[it->first]={};
-            }
+    for(const auto& [origem,destinos] : grafo){
+        if(grafo_inverso.find(origem) == grafo_inverso.end()){
+            grafo_inverso[origem] = {};
+        }
+        for(const auto& destino : destinos){
+            grafo_inverso[destino].push_back(origem);
         }
     }
     return grafo_inverso;
