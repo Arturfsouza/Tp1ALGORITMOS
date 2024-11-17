@@ -1,7 +1,7 @@
 #include "grafo.hpp"
-#include <queue>
 
-grafo::grafo(int vertices){
+
+grafo::grafo(){
 
 }
 
@@ -142,7 +142,118 @@ std::pair<int, std::vector<std::string>> grafo::BatalhoesSecundarios(const std::
 }
 
 
+bool EhEuleriano(const std::map<std::string, std::vector<std::string>>& subgrafo) {
+    std::map<std::string, int> grau_entrada, grau_saida;
 
+    // Calcula graus de entrada e saída
+    for (const auto& [vertice, adjacentes] : subgrafo) {
+        grau_saida[vertice] += adjacentes.size();
+        for (const auto& destino : adjacentes) {
+            grau_entrada[destino]++;
+        }
+    }
+
+    // Verifica se os graus de entrada e saída são iguais para todos os vértices
+    for (const auto& [vertice, _] : subgrafo) {
+        if (grau_entrada[vertice] != grau_saida[vertice]) {
+            return false;
+        }
+    }
+
+    // Verifica conectividade usando componentes fortemente conectados (Kosaraju ou equivalente)
+    std::map<std::string, bool> visitado;
+    std::stack<std::string> ordem;
+
+    for (const auto& [vertice, _] : subgrafo) {
+        if (!visitado[vertice]) {
+            preOrdem(vertice, visitado, ordem, subgrafo);
+        }
+    }
+
+    auto subgrafo_invertido = InverteGrafo(subgrafo);
+    visitado.clear();
+    std::vector<std::string> vazio;  // Vetor temporário vazio
+    DFS(ordem.top(), visitado, subgrafo_invertido, vazio);
+    for (const auto& [vertice, _] : subgrafo) {
+        if (!visitado[vertice]) return false;
+    }
+
+    return true;
+}
+
+// Função para encontrar um circuito Euleriano
+std::vector<std::string> EncontraCircuitoEuleriano(
+    const std::map<std::string, std::vector<std::string>>& subgrafo,
+    const std::string& origem) {
+    std::map<std::string, std::vector<std::string>> grafo_mutavel = subgrafo;
+    std::stack<std::string> stack;
+    std::vector<std::string> circuito;
+
+    stack.push(origem);
+    while (!stack.empty()) {
+        std::string atual = stack.top();
+        if (!grafo_mutavel[atual].empty()) {
+            std::string proximo = grafo_mutavel[atual].back();
+            grafo_mutavel[atual].pop_back();
+            stack.push(proximo);
+        } else {
+            circuito.push_back(atual);
+            stack.pop();
+        }
+    }
+
+    std::reverse(circuito.begin(), circuito.end());
+    return circuito;
+}
+
+// Implementação de PatrulhamentoPreventivo
+std::map<std::string, std::vector<std::string>> grafo::PatrulhamentoPreventivo() {
+    std::map<std::string, std::vector<std::string>> patrulhas;
+
+    // Identifica a capital
+    std::string capital = EncontraCapital();
+
+    // Identifica os batalhões secundários
+    auto [num_batalhoes, locais_batalhoes] = BatalhoesSecundarios(capital);
+
+    // Adiciona capital e batalhões secundários à lista de vértices para análise
+    std::vector<std::string> batalhoes = locais_batalhoes;
+    batalhoes.push_back(capital);
+
+    // Itera sobre todos os batalhões (capital + secundários)
+    for (const auto& batalhao : batalhoes) {
+        // Subgrafo alcançável a partir do batalhão atual
+        std::map<std::string, std::vector<std::string>> subgrafo;
+        std::queue<std::string> fila;
+        std::map<std::string, bool> visitado;
+
+        fila.push(batalhao);
+        visitado[batalhao] = true;
+
+        // Constrói o subgrafo alcançável
+        while (!fila.empty()) {
+            std::string atual = fila.front();
+            fila.pop();
+
+            subgrafo[atual] = grafo_[atual];
+            for (const auto& vizinho : grafo_[atual]) {
+                if (!visitado[vizinho]) {
+                    visitado[vizinho] = true;
+                    fila.push(vizinho);
+                }
+            }
+        }
+
+        // Verifica se o subgrafo é Euleriano
+        if (EhEuleriano(subgrafo)) {
+            // Encontra o circuito Euleriano para o subgrafo
+            std::vector<std::string> rota = EncontraCircuitoEuleriano(subgrafo, batalhao);
+            patrulhas[batalhao] = rota;
+        }
+    }
+
+    return patrulhas;
+}
 
 
 grafo::~grafo(){}

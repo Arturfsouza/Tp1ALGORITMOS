@@ -18,5 +18,19 @@ int main(){
     for(auto it = n.second.begin(); it != n.second.end(); it++){
         std::cout<<*it<<std::endl;
     }
+
+    auto patrulhas = g.PatrulhamentoPreventivo();
+    if (patrulhas.empty()) {
+        std::cout << "Nenhum patrulhamento possível" << std::endl;
+    } else {
+        std::cout << patrulhas.size() << std::endl; // Número de patrulhamentos possíveis
+        for (const auto& [batalhao, rota] : patrulhas) {
+            for (const auto& local : rota) {
+                std::cout << local << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
     return 0;
 }
